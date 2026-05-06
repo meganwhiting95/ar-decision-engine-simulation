@@ -1,0 +1,415 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+#sim{width:100%;padding:12px 0 16px}
+.ctrl-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.ctrl-bar button{font-size:13px;padding:6px 14px;font-family:var(--font-sans)}
+.scene-label{font-size:12px;color:var(--color-text-secondary);flex:1;text-align:right}
+.progress-track{width:100%;height:3px;background:var(--color-border-tertiary);border-radius:2px;margin-bottom:14px;overflow:hidden}
+.progress-fill{height:100%;background:var(--color-text-secondary);border-radius:2px;transition:width .4s ease}
+.screen{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;min-height:400px;position:relative}
+.caption-bar{background:var(--color-background-secondary);border-top:0.5px solid var(--color-border-tertiary);padding:10px 16px;font-size:12px;color:var(--color-text-secondary);min-height:42px;display:flex;align-items:center;gap:8px}
+.caption-bar i{font-size:15px;color:var(--color-text-secondary);flex-shrink:0}
+
+.xltb{background:#1e3a5f;padding:8px 14px;display:flex;align-items:center;gap:10px}
+.xldots{display:flex;gap:5px}
+.xldot{width:9px;height:9px;border-radius:50%}
+.xlfn{font-size:11px;color:rgba(255,255,255,.75);font-family:var(--font-mono)}
+.xlbadge{margin-left:auto;background:rgba(255,255,255,.15);font-size:10px;color:#93c5fd;padding:2px 7px;border-radius:4px;font-family:var(--font-mono)}
+.xltabs{background:#16213a;display:flex;gap:2px;padding:0 8px;border-bottom:0.5px solid rgba(255,255,255,.08);overflow-x:auto}
+.xltab{padding:6px 12px;font-size:11px;color:#64748b;border-radius:5px 5px 0 0;white-space:nowrap;font-weight:500}
+.xltab.on{background:#1e3a5f;color:#93c5fd;border:0.5px solid rgba(255,255,255,.1);border-bottom:none}
+.xltab.grn{color:#4ade80}
+.xlbody{background:#f8f9fa;color:#1e293b;padding:0}
+
+.hdr-strip{background:#1a2744;color:#fff;padding:10px 16px;font-size:13px;font-weight:700}
+.hint-strip{background:#dbeafe;color:#1e40af;padding:5px 16px;font-size:10px;font-style:italic}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:#2563eb;color:#fff;padding:6px 10px;text-align:left;font-weight:600;white-space:nowrap;border-right:0.5px solid rgba(255,255,255,.15)}
+.tbl td{padding:5px 10px;border-bottom:0.5px solid #e2e8f0;border-right:0.5px solid #e2e8f0;white-space:nowrap}
+.tbl tr:nth-child(even) td{background:#f1f5f9}
+.pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700}
+.pill-red{background:#fee2e2;color:#dc2626}
+.pill-amb{background:#fef3c7;color:#92400e}
+.pill-grn{background:#dcfce7;color:#166534}
+.pill-blu{background:#dbeafe;color:#1e40af}
+
+.macro-dlg{background:#fff;border:0.5px solid #cbd5e1;border-radius:5px;margin:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.macro-title{background:#1a4d8f;color:#fff;padding:7px 12px;font-size:11px;font-weight:700}
+.macro-body{padding:12px;display:flex;gap:12px}
+.macro-list{flex:1;border:0.5px solid #cbd5e1;border-radius:3px;overflow:hidden;font-size:11px}
+.mi{padding:6px 10px;color:#374151;border-bottom:0.5px solid #e5e7eb;cursor:default}
+.mi.sel{background:#dbeafe;color:#1d4ed8;font-weight:700}
+.macro-btns{display:flex;flex-direction:column;gap:5px}
+.mbtn{padding:5px 14px;border-radius:3px;font-size:11px;font-weight:700;cursor:default;border:0.5px solid}
+.mbtn-run{background:#2563eb;color:#fff;border-color:#1d4ed8}
+.mbtn-can{background:#fff;color:#374151;border-color:#cbd5e1}
+
+.prog-wrap{background:#fff;margin:12px;border-radius:6px;border:0.5px solid #e2e8f0;padding:14px}
+.prog-outer{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:8px 0}
+.prog-inner{height:100%;background:#2563eb;border-radius:999px;transition:width .5s ease}
+.pstep{font-size:11px;display:flex;align-items:center;gap:7px;padding:3px 0;color:#94a3b8}
+.pstep.done{color:#16a34a}
+.pstep.act{color:#2563eb;font-weight:500}
+
+.res-banner{background:#1a2744;color:#fff;padding:12px 16px;font-size:14px;font-weight:800}
+.res-sub{background:#dbeafe;color:#1e40af;padding:5px 16px;font-size:10px;font-style:italic}
+.res-selrow{background:#f8fafc;padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #e2e8f0}
+.res-sel-lbl{background:#2563eb;color:#fff;padding:5px 12px;font-size:11px;font-weight:700;border-radius:3px}
+.res-val-box{border:2px solid #f59e0b;background:#fffbeb;padding:4px 10px;font-size:12px;font-weight:700;border-radius:3px;color:#1e293b;min-width:120px;font-family:var(--font-mono)}
+.typing{overflow:hidden;white-space:nowrap;border-right:2px solid #2563eb;animation:typ .8s steps(20) forwards,blk .6s step-end infinite}
+@keyframes typ{from{width:0}to{width:100%}}
+@keyframes blk{50%{border-color:transparent}}
+.sec-head{padding:7px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#fff}
+.sec-blue{background:#2563eb}.sec-grn{background:#16a34a}.sec-amb{background:#d97706}
+.rgrid{display:grid;grid-template-columns:1fr 1fr}
+.rcell{padding:7px 12px;border-bottom:0.5px solid #e5e7eb;border-right:0.5px solid #e5e7eb}
+.rlbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:2px}
+.rval{font-size:11px;font-weight:600;color:#1e293b;line-height:1.4}
+.rval.blu{color:#2563eb}.rval.red{color:#dc2626;font-weight:800}.rval.grn{color:#16a34a}.rval.amb{color:#d97706}
+.rfull{padding:7px 12px;border-bottom:0.5px solid #e5e7eb;grid-column:1/-1}
+.rwf{font-size:10px;color:#374151;line-height:1.7;white-space:pre-line}
+.rdisc{background:#fff7ed;border-top:0.5px solid #fed7aa;padding:6px 12px;font-size:9px;color:#c2410c;font-style:italic;grid-column:1/-1}
+
+.override-box{margin:12px;background:#fffbeb;border:0.5px solid #f59e0b;border-radius:6px;padding:12px;font-size:11px}
+.override-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px}
+.override-row{display:flex;align-items:flex-start;gap:8px;margin:4px 0;color:#374151}
+.override-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;color:#fff}
+
+.done-box{padding:24px 20px;text-align:center}
+.done-icon{font-size:36px;margin-bottom:10px;color:#16a34a}
+.done-h{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.done-p{font-size:13px;color:var(--color-text-secondary);line-height:1.6;max-width:420px;margin:0 auto 16px}
+.done-list{text-align:left;display:flex;flex-direction:column;gap:6px;max-width:360px;margin:0 auto}
+.ditem{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--color-text-secondary)}
+.dck{color:#16a34a;font-size:13px;flex-shrink:0;margin-top:1px}
+
+.cursor{display:inline-block;width:2px;height:12px;background:#2563eb;vertical-align:middle;animation:cur .7s step-end infinite}
+@keyframes cur{50%{opacity:0}}
+.highlight-row td{background:#fffbeb !important}
+.flash{animation:fsh .6s ease}
+@keyframes fsh{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+
+<h2 class="sr-only">AR Decision Engine animated walkthrough — shows paste, macro run, and claim resolver in action</h2>
+
+<div id="sim">
+  <div class="ctrl-bar">
+    <button id="btnPlay" onclick="togglePlay()"><i class="ti ti-player-play" aria-hidden="true"></i> Play</button>
+    <button onclick="restart()"><i class="ti ti-refresh" aria-hidden="true"></i> Restart</button>
+    <button onclick="skipTo(0)">Start</button>
+    <button onclick="skipTo(2)">Paste data</button>
+    <button onclick="skipTo(4)">Run macro</button>
+    <button onclick="skipTo(7)">Resolver</button>
+    <span class="scene-label" id="sceneLbl">Scene 1 of 10</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+  <div class="screen" id="screen"></div>
+  <div class="caption-bar"><i class="ti ti-info-circle" aria-hidden="true"></i><span id="caption">Press Play to begin the walkthrough</span></div>
+</div>
+
+<script>
+const SCENES = [
+  {
+    dur:3200,
+    caption:"The AR Decision Engine opens to the Claim_Resolver — the main daily view for AR reps.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab on grn">Claim_Resolver</div><div class="xltab">Epic_Import</div><div class="xltab">Claims_Database</div><div class="xltab">Denial_Lookup</div><div class="xltab">Override_Rules</div></div>
+      <div class="res-banner">🏥  AR DECISION ENGINE — CLAIM RESOLVER</div>
+      <div class="res-sub">Select an Invoice Number. All claim details and workflow populate automatically.</div>
+      <div class="res-selrow"><div class="res-sel-lbl">SELECT INVOICE</div><div class="res-val-box" style="color:#94a3b8;font-style:italic;border-color:#e2e8f0;">— none selected —</div></div>
+      <div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px;">
+        <i class="ti ti-arrow-up" style="font-size:24px;display:block;margin:0 auto 10px;color:#2563eb" aria-hidden="true"></i>
+        Select an invoice above after running the macro to view follow-up workflow
+      </div>`
+    }
+  },
+  {
+    dur:3000,
+    caption:"First step: navigate to Epic_Import. This is where you paste the workqueue export from Epic.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab">Claim_Resolver</div><div class="xltab on" style="color:#93c5fd;">Epic_Import</div><div class="xltab">Claims_Database</div><div class="xltab">Denial_Lookup</div><div class="xltab">Override_Rules</div></div>
+      <div class="hdr-strip">🏥  AR Decision Engine — Epic Import Zone</div>
+      <div class="hint-strip">Paste Epic workqueue export below. Row 3 = headers. Do NOT modify row 3. Run macro after pasting.</div>
+      <div style="padding:30px 20px;text-align:center;background:#f8f9fa;">
+        <div style="border:2px dashed #93c5fd;background:#eff6ff;padding:20px;border-radius:6px;color:#2563eb;font-size:12px;">
+          <i class="ti ti-clipboard" style="font-size:24px;display:block;margin:0 auto 8px" aria-hidden="true"></i>
+          Empty — ready for your Epic export paste<br><span style="color:#94a3b8;font-size:10px;">Click cell A4 first, then Ctrl+V</span>
+        </div>
+      </div>`
+    }
+  },
+  {
+    dur:3800,
+    caption:"The rep copies the workqueue export from Epic and pastes it into cell A4. Three claims land in the table.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab">Claim_Resolver</div><div class="xltab on" style="color:#93c5fd;">Epic_Import</div><div class="xltab">Claims_Database</div></div>
+      <div class="hdr-strip">🏥  AR Decision Engine — Epic Import Zone</div>
+      <div class="hint-strip">Paste Epic workqueue export below. Row 3 = headers. Do NOT modify row 3. Run macro after pasting.</div>
+      <div style="overflow-x:auto">
+      <table class="tbl">
+        <tr><th>Invoice Num</th><th>Patient</th><th>Payor</th><th>Billed Amt</th><th>Outstanding Amt</th><th>Reason Code List</th><th>Aging Days</th><th>Days To Timely</th></tr>
+        <tr class="highlight-row flash"><td>INV-10001</td><td>SMITH, JOHN</td><td>AETNA BETTER HEALTH</td><td style="color:#166534;font-weight:600">$250.00</td><td style="color:#166534;font-weight:600">$250.00</td><td><span class="pill pill-red">29, N30</span></td><td>45</td><td style="color:#dc2626;font-weight:700">5</td></tr>
+        <tr class="flash" style="animation-delay:.1s"><td>INV-10002</td><td>DOE, JANE</td><td>MEDICARE PART B</td><td style="color:#166534;font-weight:600">$180.00</td><td style="color:#d97706;font-weight:600">$45.00</td><td><span class="pill pill-amb">97, N20</span></td><td>62</td><td>45</td></tr>
+        <tr class="flash" style="animation-delay:.2s"><td>INV-10003</td><td>BROWN, ROBERT</td><td>STATE MEDICAID</td><td style="color:#166534;font-weight:600">$320.00</td><td style="color:#166534;font-weight:600">$320.00</td><td><span class="pill pill-red">24</span></td><td>30</td><td>60</td></tr>
+      </table>
+      </div>
+      <div style="background:#dcfce7;padding:6px 14px;font-size:10px;color:#166534;border-top:0.5px solid #86efac;">
+        <i class="ti ti-check" aria-hidden="true"></i> 3 rows pasted successfully. tblEpicImport updated. Ready to run macro.
+      </div>`
+    }
+  },
+  {
+    dur:2800,
+    caption:"Now press Alt+F8 to open the Macro dialog. Select RunDecisionEngine and click Run.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab">Claim_Resolver</div><div class="xltab on" style="color:#93c5fd;">Epic_Import</div><div class="xltab">Claims_Database</div></div>
+      <div class="macro-dlg">
+        <div class="macro-title">Macro — AR_Decision_Engine.xlsm</div>
+        <div class="macro-body">
+          <div style="flex:1">
+            <div style="font-size:11px;color:#374151;margin-bottom:6px;font-weight:600">Macro Name:</div>
+            <div class="macro-list"><div class="mi">ClearClaimsDatabase</div><div class="mi sel">RunDecisionEngine</div></div>
+          </div>
+          <div class="macro-btns"><button class="mbtn mbtn-run">▶ Run</button><button class="mbtn mbtn-can">Cancel</button><button class="mbtn mbtn-can">Step Into</button></div>
+        </div>
+        <div style="border-top:0.5px solid #e5e7eb;padding:6px 12px;font-size:10px;color:#64748b">Alt+F8 opens this dialog</div>
+      </div>`
+    }
+  },
+  {
+    dur:5500,
+    caption:"The macro runs. It processes every row: parsing codes, checking overrides, matching denial scenarios, and calculating priorities.",
+    render(){
+      const steps=[
+        {t:"Copying Epic_Import → Claims_Database (3 rows)",done:true},
+        {t:"Parsing CARC / RARC codes from Reason Code List",done:true},
+        {t:"Mapping payer groups via tblPayerMap",done:true},
+        {t:"Running override logic — timely, residual balance, deferred…",act:true},
+        {t:"Matching denial scenarios in tblDenialLookup",done:false},
+        {t:"Calculating priority tiers and next action dates",done:false},
+        {t:"Populating Final outputs in tblClaims",done:false},
+      ]
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="prog-wrap">
+        <div style="font-size:12px;font-weight:500;color:#1e293b;margin-bottom:8px"><i class="ti ti-settings" style="font-size:14px;vertical-align:-2px;margin-right:4px" aria-hidden="true"></i> RunDecisionEngine — Processing 3 claims...</div>
+        <div class="prog-outer"><div class="prog-inner" style="width:52%"></div></div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:10px">52% — Override logic pass</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          ${steps.map(s=>`<div class="pstep ${s.done?'done':s.act?'act':''}"><span>${s.done?'✅':s.act?'⚙️':'⏸'}</span> ${s.t}</div>`).join('')}
+        </div>
+      </div>
+      <div class="override-box">
+        <div class="override-title"><i class="ti ti-shield-check" style="font-size:13px;vertical-align:-1px;margin-right:4px" aria-hidden="true"></i> Override check — INV-10001</div>
+        ${[
+          ['#dc2626','1','TIMELY_URGENT','Days_To_Timely = 5 ≤ 14 threshold','TRIGGERED'],
+          ['#e2e8f0','2','APPEAL_URGENT','Not checked — TIMELY_URGENT already fired','skipped'],
+          ['#e2e8f0','5','VERIFY_REMAINING_BAL','Not checked — override already applied','skipped'],
+        ].map(([c,n,k,d,r])=>`<div class="override-row"><div class="override-num" style="background:${c}">${n}</div><div><span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${c==='#dc2626'?'#dc2626':'#94a3b8'}">${k}</span> <span style="font-size:10px;color:#64748b">— ${d}</span> <span class="pill ${r==='TRIGGERED'?'pill-red':'pill-grn'}" style="margin-left:4px">${r}</span></div></div>`).join('')}
+      </div>`
+    }
+  },
+  {
+    dur:3200,
+    caption:"Macro complete. 3 rows processed. All final outputs are now populated in tblClaims. Navigate to Claim_Resolver.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="prog-wrap" style="margin:12px">
+        <div style="font-size:12px;font-weight:500;color:#1e293b;margin-bottom:8px">RunDecisionEngine — Complete</div>
+        <div class="prog-outer"><div class="prog-inner" style="width:100%"></div></div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:12px">100%</div>
+        ${['Copying Epic_Import → Claims_Database','Parsing CARC/RARC codes','Mapping payer groups','Running override logic','Matching denial scenarios','Calculating priority tiers','Populating final outputs'].map(t=>`<div class="pstep done"><span>✅</span> ${t}</div>`).join('')}
+      </div>
+      <div style="background:#dcfce7;margin:0 12px;border-radius:6px;padding:12px;font-size:12px;color:#166534;font-weight:600;border:0.5px solid #86efac">
+        <i class="ti ti-check" style="font-size:14px;vertical-align:-2px;margin-right:4px" aria-hidden="true"></i> Decision Engine Complete! 3 rows processed. Navigate to Claim_Resolver to view results.
+      </div>`
+    }
+  },
+  {
+    dur:2600,
+    caption:"Back on Claim_Resolver. The dropdown at D4 is now populated. The rep clicks it and selects INV-10001.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab on grn">Claim_Resolver</div><div class="xltab">Epic_Import</div><div class="xltab">Claims_Database</div></div>
+      <div class="res-banner">🏥  AR DECISION ENGINE — CLAIM RESOLVER</div>
+      <div class="res-sub">Select an Invoice Number. All claim details and workflow populate automatically.</div>
+      <div class="res-selrow">
+        <div class="res-sel-lbl">SELECT INVOICE</div>
+        <div class="res-val-box typing">INV-10001</div>
+        <span style="font-size:10px;color:#16a34a;font-style:italic"><i class="ti ti-check" aria-hidden="true"></i> Selected</span>
+      </div>
+      <div style="padding:20px;text-align:center;color:#94a3b8;font-size:11px">
+        <i class="ti ti-loader" style="font-size:20px;display:block;margin:0 auto 8px;animation:spin 1s linear infinite" aria-hidden="true"></i>
+        Loading claim data...
+      </div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`
+    }
+  },
+  {
+    dur:5500,
+    caption:"INV-10001 loads instantly. The engine fired TIMELY_URGENT — this claim has only 5 days left to file. Priority: Critical.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab on grn">Claim_Resolver</div><div class="xltab">Epic_Import</div></div>
+      <div class="res-banner">🏥  AR DECISION ENGINE — CLAIM RESOLVER</div>
+      <div class="res-sub">Select an Invoice Number. All claim details and workflow populate automatically.</div>
+      <div class="res-selrow"><div class="res-sel-lbl">SELECT INVOICE</div><div class="res-val-box">INV-10001</div></div>
+      <div class="rgrid">
+        <div class="sec-head sec-blue" style="grid-column:1/-1">CLAIM DETAILS</div>
+        <div class="rcell"><div class="rlbl">Invoice</div><div class="rval blu">INV-10001</div></div>
+        <div class="rcell"><div class="rlbl">Patient</div><div class="rval">SMITH, JOHN</div></div>
+        <div class="rcell"><div class="rlbl">Payor</div><div class="rval">AETNA BETTER HEALTH</div></div>
+        <div class="rcell"><div class="rlbl">Outstanding</div><div class="rval">$250.00</div></div>
+        <div class="rcell"><div class="rlbl">CARC</div><div class="rval red">29</div></div>
+        <div class="rcell"><div class="rlbl">Days to Timely</div><div class="rval red">5 ⚠️</div></div>
+        <div class="sec-head sec-grn" style="grid-column:1/-1">DECISION ENGINE OUTPUT</div>
+        <div class="rcell"><div class="rlbl">Priority Tier</div><div class="rval red">Critical</div></div>
+        <div class="rcell"><div class="rlbl">Override Reason</div><div class="rval amb">TIMELY_URGENT</div></div>
+        <div class="rfull"><div class="rlbl">Final Category</div><div class="rval" style="font-size:12px">URGENT — Timely Filing Risk</div></div>
+        <div class="rfull"><div class="rlbl">Recommended Action</div><div class="rval blu" style="font-size:11px">STOP all other workflow. Verify submission status. If denied, initiate timely filing appeal TODAY with proof.</div></div>
+        <div class="rfull"><div class="rlbl">Workflow Steps</div><div class="rwf">1. STOP — timely filing deadline is imminent
+2. Pull clearinghouse/Epic submission log
+3. If not submitted → submit immediately
+4. If submitted → pull delivery confirmation
+5. Prepare timely filing appeal with all proof
+6. Submit appeal TODAY — escalate to supervisor</div></div>
+        <div class="rdisc">FOR INTERNAL USE ONLY — Verify against payer policy before action</div>
+      </div>`
+    }
+  },
+  {
+    dur:5500,
+    caption:"Now the rep selects INV-10002. Same denial code area (97/N20 — bundling) — but the engine detects a residual balance and overrides to VERIFY_REMAINING_BAL instead.",
+    render(){
+      return `<div class="xltb"><div class="xldots"><div class="xldot" style="background:#ff5f57"></div><div class="xldot" style="background:#febc2e"></div><div class="xldot" style="background:#28c840"></div></div><span class="xlfn">AR_Decision_Engine</span><span class="xlbadge">.xlsm</span></div>
+      <div class="xltabs"><div class="xltab on grn">Claim_Resolver</div><div class="xltab">Epic_Import</div></div>
+      <div class="res-banner">🏥  AR DECISION ENGINE — CLAIM RESOLVER</div>
+      <div class="res-sub">Select an Invoice Number. All claim details and workflow populate automatically.</div>
+      <div class="res-selrow"><div class="res-sel-lbl">SELECT INVOICE</div><div class="res-val-box">INV-10002</div></div>
+      <div class="rgrid">
+        <div class="sec-head sec-blue" style="grid-column:1/-1">CLAIM DETAILS</div>
+        <div class="rcell"><div class="rlbl">Invoice</div><div class="rval blu">INV-10002</div></div>
+        <div class="rcell"><div class="rlbl">Patient</div><div class="rval">DOE, JANE</div></div>
+        <div class="rcell"><div class="rlbl">Payor</div><div class="rval">MEDICARE PART B</div></div>
+        <div class="rcell"><div class="rlbl">Billed / Outstanding</div><div class="rval">$180.00 / <span class="amb">$45.00</span></div></div>
+        <div class="rcell"><div class="rlbl">CARC / RARC</div><div class="rval">97 / N20</div></div>
+        <div class="rcell"><div class="rlbl">Residual Balance Flag</div><div class="rval amb">YES ⚠️</div></div>
+        <div class="sec-head sec-grn" style="grid-column:1/-1">DECISION ENGINE OUTPUT</div>
+        <div class="rcell"><div class="rlbl">Priority Tier</div><div class="rval amb">Medium</div></div>
+        <div class="rcell"><div class="rlbl">Override Reason</div><div class="rval amb">VERIFY_REMAINING_BAL</div></div>
+        <div class="rfull"><div class="rlbl">Final Category</div><div class="rval" style="font-size:12px">Residual Balance Review — NOT a bundling dispute</div></div>
+        <div class="rfull"><div class="rlbl">Root Cause</div><div class="rval" style="font-size:11px;font-weight:400;color:#374151">$45 remains on a $180 billed claim. Possible patient responsibility, unposted contractual, or partial payment — denial code 97/N20 is likely NOT the true driver.</div></div>
+        <div class="rfull"><div class="rlbl">Recommended Action</div><div class="rval blu" style="font-size:11px">Review remit and payment activity FIRST. Determine why balance remains before acting on denial code.</div></div>
+        <div class="rfull"><div class="rlbl">Workflow Steps</div><div class="rwf">1. Pull full ERA/EOB from Medicare portal
+2. Review all posting activity on this account
+3. Determine: PR balance → patient billing
+   Unposted contractual → post adjustment
+   Underpayment → dispute
+   Denial still valid → follow denial workflow
+4. Document determination in Epic</div></div>
+        <div class="rdisc">Override prevented incorrect bundling resubmission — always verify posting activity first</div>
+      </div>`
+    }
+  },
+  {
+    dur:4000,
+    caption:"The engine correctly routes two claims with similar denial codes to completely different workflows — that's the override-first logic at work. Ready to use.",
+    render(){
+      return `<div style="padding:20px">
+        <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Same denial area — different engine decisions</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px">
+              <div style="font-size:10px;font-weight:700;color:#dc2626;margin-bottom:6px">INV-10001 — SMITH, JOHN</div>
+              <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Denial code: 29 (timely filing)</div>
+              <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">Outstanding: $250 / Billed: $250</div>
+              <div style="font-size:11px;font-weight:500;color:#dc2626">Override: TIMELY_URGENT</div>
+              <div style="font-size:10px;color:var(--color-text-secondary)">→ Appeal immediately today</div>
+            </div>
+            <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px">
+              <div style="font-size:10px;font-weight:700;color:#d97706;margin-bottom:6px">INV-10002 — DOE, JANE</div>
+              <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Denial code: 97/N20 (bundling)</div>
+              <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">Outstanding: $45 / Billed: $180</div>
+              <div style="font-size:11px;font-weight:500;color:#d97706">Override: VERIFY_REMAINING_BAL</div>
+              <div style="font-size:10px;color:var(--color-text-secondary)">→ Review posting before resubmitting</div>
+            </div>
+          </div>
+        </div>
+        <div class="done-box">
+          <div class="done-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+          <div class="done-h">Walkthrough complete</div>
+          <div class="done-p">The engine processes every claim in seconds, applies the correct logic, and gives each rep an exact, auditable workflow — no guessing required.</div>
+          <div class="done-list">
+            ${[['Paste export into Epic_Import (row A4)'],['Run macro: Alt+F8 → RunDecisionEngine'],['Go to Claim_Resolver, pick any invoice'],['Follow the workflow — every step is traceable']].map(([t])=>`<div class="ditem"><span class="dck"><i class="ti ti-check" aria-hidden="true"></i></span><span>${t}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>`
+    }
+  }
+]
+
+let cur=0, timer=null, playing=false, elapsed=0, tickMs=80
+
+function render(idx){
+  const s=SCENES[idx]
+  document.getElementById('screen').innerHTML=s.render()
+  document.getElementById('caption').textContent=s.caption
+  document.getElementById('sceneLbl').textContent=`Scene ${idx+1} of ${SCENES.length}`
+  const pct=Math.round((idx/SCENES.length)*100)
+  document.getElementById('pFill').style.width=pct+'%'
+}
+
+function togglePlay(){
+  playing=!playing
+  const btn=document.getElementById('btnPlay')
+  if(playing){
+    btn.innerHTML='<i class="ti ti-player-pause" aria-hidden="true"></i> Pause'
+    tick()
+  } else {
+    btn.innerHTML='<i class="ti ti-player-play" aria-hidden="true"></i> Play'
+    clearTimeout(timer)
+  }
+}
+
+function tick(){
+  if(!playing) return
+  elapsed+=tickMs
+  if(elapsed>=SCENES[cur].dur){
+    elapsed=0
+    cur++
+    if(cur>=SCENES.length){
+      cur=SCENES.length-1
+      playing=false
+      document.getElementById('btnPlay').innerHTML='<i class="ti ti-player-play" aria-hidden="true"></i> Play'
+      document.getElementById('pFill').style.width='100%'
+      return
+    }
+    render(cur)
+  }
+  timer=setTimeout(tick, tickMs)
+}
+
+function restart(){
+  clearTimeout(timer)
+  playing=false
+  cur=0; elapsed=0
+  document.getElementById('btnPlay').innerHTML='<i class="ti ti-player-play" aria-hidden="true"></i> Play'
+  render(0)
+  document.getElementById('pFill').style.width='0%'
+}
+
+function skipTo(idx){
+  clearTimeout(timer)
+  elapsed=0; cur=idx
+  render(cur)
+  if(playing) tick()
+}
+
+render(0)
+</script>
